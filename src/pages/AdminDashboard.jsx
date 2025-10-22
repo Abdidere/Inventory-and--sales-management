@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
 import ProductCard from '../components/ProductCard';
 import Reports from '../components/Reports';
+import '../styles/Admin.css';
+import '../styles/Products.css';
+import '../styles/Reports.css';
 
 const AdminDashboard = ({ 
   products, 
@@ -10,7 +13,14 @@ const AdminDashboard = ({
   setCategories, 
   salesHistory, 
   setSalesHistory,
-  searchQuery 
+  searchQuery,
+  onSearch,
+  onAddProduct,
+  onDeleteProduct,
+  onRecordSale,
+  onAddCategory,
+  onDeleteCategory,
+  getFilteredProducts
 }) => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [newProduct, setNewProduct] = useState({
@@ -25,18 +35,27 @@ const AdminDashboard = ({
   const [newCategory, setNewCategory] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [sellQuantity, setSellQuantity] = useState(1);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const ownerName = "John Owner";
 
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (window.innerWidth <= 768 && sidebarOpen) {
+        if (!event.target.closest('.admin-sidebar') && !event.target.closest('.sidebar-toggle')) {
+          setSidebarOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [sidebarOpen]);
+
   const handleAddProduct = (e) => {
     e.preventDefault();
-    const product = {
-      ...newProduct,
-      id: Date.now(),
-      price: parseInt(newProduct.price),
-      amount: parseInt(newProduct.amount)
-    };
-    setProducts([...products, product]);
+    onAddProduct(newProduct);
     setNewProduct({
       name: '',
       category: '',
@@ -51,8 +70,7 @@ const AdminDashboard = ({
 
   const handleAddCategory = (e) => {
     e.preventDefault();
-    if (newCategory && !categories.includes(newCategory)) {
-      setCategories([...categories, newCategory]);
+    if (onAddCategory(newCategory)) {
       setNewCategory('');
       alert('Category added successfully!');
     }
@@ -60,13 +78,13 @@ const AdminDashboard = ({
 
   const handleDeleteCategory = (category) => {
     if (window.confirm(`Are you sure you want to delete category "${category}"?`)) {
-      setCategories(categories.filter(c => c !== category));
+      onDeleteCategory(category);
     }
   };
 
   const handleDeleteProduct = (productId) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      setProducts(products.filter(p => p.id !== productId));
+      onDeleteProduct(productId);
     }
   };
 
@@ -75,36 +93,14 @@ const AdminDashboard = ({
   };
 
   const confirmSale = () => {
-    if (selectedProduct && sellQuantity > 0 && sellQuantity <= selectedProduct.amount) {
-      // Update product quantity
-      const updatedProducts = products.map(p =>
-        p.id === selectedProduct.id
-          ? { ...p, amount: p.amount - sellQuantity }
-          : p
-      );
-      setProducts(updatedProducts);
-
-      // Add to sales history
-      const sale = {
-        productId: selectedProduct.id,
-        productName: selectedProduct.name,
-        quantity: sellQuantity,
-        price: selectedProduct.price,
-        timestamp: new Date().toISOString()
-      };
-      setSalesHistory([...salesHistory, sale]);
-
+    if (selectedProduct && onRecordSale(selectedProduct.id, sellQuantity)) {
       setSelectedProduct(null);
       setSellQuantity(1);
       alert('Sale recorded successfully!');
     }
   };
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = getFilteredProducts ? getFilteredProducts({}) : products;
 
   const renderSection = () => {
     switch (activeSection) {
@@ -112,23 +108,24 @@ const AdminDashboard = ({
         return (
           <div>
             <h2>Dashboard Overview</h2>
-            <div className="welcome-message">
-              <h3>Quick Stats</h3>
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem'}}>
-                <div>
-                  <h4>Total Products</h4>
-                  <p style={{fontSize: '2rem', fontWeight: 'bold'}}>{products.length}</p>
-                </div>
-                <div>
-                  <h4>Low Stock Items</h4>
-                  <p style={{fontSize: '2rem', fontWeight: 'bold', color: '#e74c3c'}}>
-                    {products.filter(p => p.amount < 5).length}
-                  </p>
-                </div>
-                <div>
-                  <h4>Total Categories</h4>
-                  <p style={{fontSize: '2rem', fontWeight: 'bold'}}>{categories.length}</p>
-                </div>
+            <div className="admin-grid">
+              <div className="admin-card">
+                <h3><i className="fas fa-boxes"></i> Total Products</h3>
+                <p className="stat-value">{products.length}</p>
+              </div>
+              <div className="admin-card">
+                <h3><i className="fas fa-exclamation-triangle"></i> Low Stock</h3>
+                <p className="stat-value" style={{color: '#e74c3c'}}>
+                  {products.filter(p => p.amount < 5).length}
+                </p>
+              </div>
+              <div className="admin-card">
+                <h3><i className="fas fa-tags"></i> Categories</h3>
+                <p className="stat-value">{categories.length}</p>
+              </div>
+              <div className="admin-card">
+                <h3><i className="fas fa-shopping-cart"></i> Total Sales</h3>
+                <p className="stat-value">{salesHistory.length}</p>
               </div>
             </div>
           </div>
@@ -288,14 +285,8 @@ const AdminDashboard = ({
           </div>
         );
 
-case 'reports':
-  return (
-    <Reports 
-      products={products} 
-      salesHistory={salesHistory} 
-    />
-  );
-     
+      case 'reports':
+        return <Reports products={products} salesHistory={salesHistory} />;
 
       case 'sales':
         return (
@@ -339,6 +330,8 @@ case 'reports':
         activeSection={activeSection} 
         setActiveSection={setActiveSection}
         ownerName={ownerName}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
       
       <div className="admin-main">

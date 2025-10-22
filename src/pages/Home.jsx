@@ -1,5 +1,7 @@
 import React from 'react';
 import ProductCard from '../components/ProductCard';
+import '../styles/Home.css';
+import '../styles/Products.css';
 
 const Home = ({ 
   products, 

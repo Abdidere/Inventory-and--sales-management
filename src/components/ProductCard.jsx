@@ -1,4 +1,5 @@
 import React from 'react';
+import '../styles/Products.css';
 
 const ProductCard = ({ product, onClick, isAdmin = false, onSell }) => {
   const handleImageError = (e) => {
@@ -10,8 +11,6 @@ const ProductCard = ({ product, onClick, isAdmin = false, onSell }) => {
       onClick(product);
     }
   };
-
-  console.log('Rendering product card:', product);
 
   return (
     <div className="product-card" onClick={handleClick}>

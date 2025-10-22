@@ -1,6 +1,7 @@
 import React from 'react';
+import '../styles/Admin.css';
 
-const AdminSidebar = ({ activeSection, setActiveSection, ownerName }) => {
+const AdminSidebar = ({ activeSection, setActiveSection, ownerName, isOpen, onToggle }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-bar' },
     { id: 'inventory', label: 'Inventory', icon: 'fas fa-boxes' },
@@ -11,28 +12,40 @@ const AdminSidebar = ({ activeSection, setActiveSection, ownerName }) => {
   ];
 
   return (
-    <div className="admin-sidebar">
-      <h2>
-        <i className="fas fa-cogs"></i>
-        Admin Panel
-      </h2>
-      <p style={{textAlign: 'center', marginBottom: '2rem', color: '#bdc3c7'}}>
-        Welcome, <strong>{ownerName}</strong>!
-      </p>
+    <>
+      <button className="sidebar-toggle" onClick={onToggle}>
+        <i className="fas fa-bars"></i>
+      </button>
       
-      <ul>
-        {menuItems.map(item => (
-          <li
-            key={item.id}
-            className={activeSection === item.id ? 'active' : ''}
-            onClick={() => setActiveSection(item.id)}
-          >
-            <i className={item.icon}></i>
-            {item.label}
-          </li>
-        ))}
-      </ul>
-    </div>
+      <div className={`admin-sidebar ${isOpen ? 'open' : ''}`}>
+        <h2>
+          <i className="fas fa-cogs"></i>
+          Admin Panel
+        </h2>
+        <p style={{textAlign: 'center', marginBottom: '2rem', color: '#bdc3c7'}}>
+          Welcome, <strong>{ownerName}</strong>!
+        </p>
+        
+        <ul>
+          {menuItems.map(item => (
+            <li
+              key={item.id}
+              className={activeSection === item.id ? 'active' : ''}
+              onClick={() => {
+                setActiveSection(item.id);
+                // Close sidebar on mobile after selection
+                if (window.innerWidth <= 768) {
+                  onToggle();
+                }
+              }}
+            >
+              <i className={item.icon}></i>
+              {item.label}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   );
 };
 
