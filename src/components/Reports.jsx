@@ -1,9 +1,20 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import '../styles/Reports.css';
 
 const Reports = ({ products, salesHistory }) => {
   const [timeRange, setTimeRange] = useState('7days');
-  const [chartType, setChartType] = useState('revenue');
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    category: '',
+    percentage: '',
+    value: '',
+    description: '',
+    color: '',
+    x: 0,
+    y: 0
+  });
+
+  const chartRef = useRef(null);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -32,316 +43,272 @@ const Reports = ({ products, salesHistory }) => {
     };
   }, [products, salesHistory]);
 
-  // Generate sample chart data for demonstration
-  const chartData = useMemo(() => {
-    const now = new Date();
-    let days = 7;
-    
-    switch (timeRange) {
-      case '30days': days = 30; break;
-      case '90days': days = 90; break;
-      case '1year': days = 365; break;
-      default: days = 7;
-    }
+  // Generate comprehensive business data for the big pie chart
+  const businessData = useMemo(() => {
+    const data = [
+      {
+        category: "Mobile Phones",
+        value: Math.floor(Math.random() * 200000) + 80000,
+        color: "#3498db",
+        description: "Smartphones & mobile devices",
+        icon: "fas fa-mobile-alt"
+      },
+      {
+        category: "Laptops & Computers",
+        value: Math.floor(Math.random() * 180000) + 70000,
+        color: "#9b59b6",
+        description: "Laptops, desktops & accessories",
+        icon: "fas fa-laptop"
+      },
+      {
+        category: "Audio Devices",
+        value: Math.floor(Math.random() * 120000) + 40000,
+        color: "#e74c3c",
+        description: "Headphones, speakers & audio gear",
+        icon: "fas fa-headphones"
+      },
+      {
+        category: "Smart Watches",
+        value: Math.floor(Math.random() * 80000) + 30000,
+        color: "#f39c12",
+        description: "Wearable technology & smart watches",
+        icon: "fas fa-clock"
+      },
+      {
+        category: "Tablets",
+        value: Math.floor(Math.random() * 100000) + 35000,
+        color: "#2ecc71",
+        description: "Tablets & e-readers",
+        icon: "fas fa-tablet-alt"
+      },
+      {
+        category: "Accessories",
+        value: Math.floor(Math.random() * 60000) + 20000,
+        color: "#1abc9c",
+        description: "Cases, chargers & accessories",
+        icon: "fas fa-plug"
+      },
+      {
+        category: "Gaming",
+        value: Math.floor(Math.random() * 90000) + 25000,
+        color: "#e67e22",
+        description: "Gaming consoles & accessories",
+        icon: "fas fa-gamepad"
+      },
+      {
+        category: "Cameras",
+        value: Math.floor(Math.random() * 70000) + 20000,
+        color: "#34495e",
+        description: "Cameras & photography equipment",
+        icon: "fas fa-camera"
+      }
+    ].sort((a, b) => b.value - a.value);
 
-    // Generate sample data since there might not be real sales data
-    const data = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
+    const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+    
+    // Calculate percentages and cumulative percentages for SVG
+    let cumulativePercent = 0;
+    return data.map(item => {
+      const percentage = (item.value / totalValue) * 100;
+      const startPercent = cumulativePercent;
+      cumulativePercent += percentage;
       
-      // Generate realistic sample data
-      const baseRevenue = Math.random() * 50000 + 10000; // 10k - 60k Birr
-      const dailyRevenue = Math.floor(baseRevenue * (0.8 + Math.random() * 0.4)); // Some variation
-      const dailySales = Math.floor(Math.random() * 15) + 5; // 5-20 sales per day
-      const dailyItems = Math.floor(dailySales * (1 + Math.random() * 2)); // 1-3 items per sale
-
-      data.push({
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        fullDate: date,
-        revenue: dailyRevenue,
-        items: dailyItems,
-        sales: dailySales
-      });
-    }
-
-    return data;
-  }, [timeRange]);
-
-  // Generate sample category data
-  const categoryData = useMemo(() => {
-    const categories = ["Mobile Phones", "Laptops", "Headphones", "Tablets", "Smart Watches"];
-    
-    return categories.map(category => ({
-      category,
-      revenue: Math.floor(Math.random() * 200000) + 50000,
-      items: Math.floor(Math.random() * 100) + 20,
-      sales: Math.floor(Math.random() * 50) + 10
-    })).sort((a, b) => b.revenue - a.revenue);
+      return {
+        ...item,
+        percentage: percentage.toFixed(1),
+        startPercent,
+        endPercent: cumulativePercent,
+        formattedValue: item.value.toLocaleString() + " Birr"
+      };
+    });
   }, []);
 
-  // Inventory value by category
-  const inventoryByCategory = useMemo(() => {
-    const categoryMap = {};
-    
-    products.forEach(product => {
-      if (!categoryMap[product.category]) {
-        categoryMap[product.category] = {
-          value: 0,
-          items: 0,
-          products: 0
-        };
-      }
-      categoryMap[product.category].value += product.price * (product.amount || 0);
-      categoryMap[product.category].items += (product.amount || 0);
-      categoryMap[product.category].products += 1;
-    });
-
-    return Object.entries(categoryMap).map(([category, data]) => ({
-      category,
-      ...data
-    })).sort((a, b) => b.value - a.value);
-  }, [products]);
-
-  // Revenue Chart Component
-  const RevenueChart = () => {
-    const maxRevenue = Math.max(...chartData.map(d => d.revenue), 1);
-    
-    return (
-      <div className="chart-container">
-        <div className="chart-header">
-          <h3>Revenue Overview</h3>
-          <span className="chart-subtitle">Daily revenue in Birr</span>
-        </div>
-        <div className="chart-content">
-          <div className="chart-bars">
-            {chartData.map((day, index) => (
-              <div key={index} className="chart-bar-container">
-                <div className="chart-bar-wrapper">
-                  <div 
-                    className="chart-bar revenue-bar"
-                    style={{ 
-                      height: `${(day.revenue / maxRevenue) * 100}%`,
-                      minHeight: '4px'
-                    }}
-                  >
-                    {day.revenue > 0 && (
-                      <div className="chart-bar-value">
-                        {day.revenue > 1000 ? `${(day.revenue/1000).toFixed(0)}k` : day.revenue}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="chart-label">{day.date}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Sales Chart Component
-  const SalesChart = () => {
-    const maxSales = Math.max(...chartData.map(d => d.sales), 1);
-    
-    return (
-      <div className="chart-container">
-        <div className="chart-header">
-          <h3>Sales Volume</h3>
-          <span className="chart-subtitle">Number of transactions per day</span>
-        </div>
-        <div className="chart-content">
-          <div className="chart-bars">
-            {chartData.map((day, index) => (
-              <div key={index} className="chart-bar-container">
-                <div className="chart-bar-wrapper">
-                  <div 
-                    className="chart-bar sales-bar"
-                    style={{ 
-                      height: `${(day.sales / maxSales) * 100}%`,
-                      minHeight: '4px'
-                    }}
-                  >
-                    {day.sales > 0 && (
-                      <div className="chart-bar-value">{day.sales}</div>
-                    )}
-                  </div>
-                </div>
-                <div className="chart-label">{day.date}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Items Sold Chart Component
-  const ItemsChart = () => {
-    const maxItems = Math.max(...chartData.map(d => d.items), 1);
-    
-    return (
-      <div className="chart-container">
-        <div className="chart-header">
-          <h3>Items Sold</h3>
-          <span className="chart-subtitle">Number of items sold per day</span>
-        </div>
-        <div className="chart-content">
-          <div className="chart-bars">
-            {chartData.map((day, index) => (
-              <div key={index} className="chart-bar-container">
-                <div className="chart-bar-wrapper">
-                  <div 
-                    className="chart-bar items-bar"
-                    style={{ 
-                      height: `${(day.items / maxItems) * 100}%`,
-                      minHeight: '4px'
-                    }}
-                  >
-                    {day.items > 0 && (
-                      <div className="chart-bar-value">{day.items}</div>
-                    )}
-                  </div>
-                </div>
-                <div className="chart-label">{day.date}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Category Performance Chart
-  const CategoryChart = () => {
-    const maxRevenue = Math.max(...categoryData.map(d => d.revenue), 1);
-    
-    return (
-      <div className="chart-container">
-        <div className="chart-header">
-          <h3>Category Performance</h3>
-          <span className="chart-subtitle">Revenue by product category</span>
-        </div>
-        <div className="chart-content">
-          <div className="category-bars">
-            {categoryData.map((category, index) => (
-              <div key={index} className="category-bar-container">
-                <div className="category-info">
-                  <span className="category-name">{category.category}</span>
-                  <span className="category-revenue">{category.revenue.toLocaleString()} Birr</span>
-                </div>
-                <div className="category-bar-wrapper">
-                  <div 
-                    className="category-bar"
-                    style={{ 
-                      width: `${(category.revenue / maxRevenue) * 100}%` 
-                    }}
-                  ></div>
-                </div>
-                <div className="category-stats">
-                  <span>{category.items} items sold</span>
-                  <span>{category.sales} transactions</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Inventory Value Chart
-  const InventoryChart = () => {
-    return (
-      <div className="chart-container">
-        <div className="chart-header">
-          <h3>Inventory Value by Category</h3>
-          <span className="chart-subtitle">Current stock value distribution</span>
-        </div>
-        <div className="chart-content">
-          <div className="inventory-chart">
-            {inventoryByCategory.map((category, index) => (
-              <div key={index} className="inventory-item">
-                <div className="inventory-category">
-                  <span>{category.category}</span>
-                  <span className="inventory-value">{category.value.toLocaleString()} Birr</span>
-                </div>
-                <div className="inventory-bar-wrapper">
-                  <div 
-                    className="inventory-bar"
-                    style={{ 
-                      width: `${(category.value / stats.totalInventoryValue) * 100}%` 
-                    }}
-                  ></div>
-                </div>
-                <div className="inventory-details">
-                  <span>{category.products} products</span>
-                  <span>{category.items} items in stock</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Pie Chart for Inventory Distribution
-  const InventoryPieChart = () => {
-    return (
-      <div className="chart-container">
-        <div className="chart-header">
-          <h3>Inventory Distribution</h3>
-          <span className="chart-subtitle">Stock value across categories</span>
-        </div>
-        <div className="chart-content">
-          <div className="pie-chart-visual">
-            {inventoryByCategory.map((category, index) => {
-              const percentage = (category.value / stats.totalInventoryValue) * 100;
-              return (
-                <div key={index} className="pie-item">
-                  <div className="pie-color" style={{
-                    backgroundColor: `hsl(${index * 60}, 70%, 50%)`
-                  }}></div>
-                  <span className="pie-label">{category.category}</span>
-                  <span className="pie-value">{percentage.toFixed(1)}%</span>
-                  <span className="pie-amount">{category.value.toLocaleString()} Birr</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Render the selected chart
-  const renderChart = () => {
-    switch (chartType) {
-      case 'revenue':
-        return <RevenueChart />;
-      case 'sales':
-        return <SalesChart />;
-      case 'items':
-        return <ItemsChart />;
-      case 'categories':
-        return <CategoryChart />;
-      case 'inventory':
-        return <InventoryChart />;
-      case 'inventory-pie':
-        return <InventoryPieChart />;
-      default:
-        return <RevenueChart />;
+  // Handle mouse move over pie segments
+  const handleSegmentMouseMove = (event, item) => {
+    if (chartRef.current) {
+      const rect = chartRef.current.getBoundingClientRect();
+      setTooltip({
+        visible: true,
+        category: item.category,
+        percentage: item.percentage,
+        value: item.formattedValue,
+        description: item.description,
+        color: item.color,
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+      });
     }
+  };
+
+  const handleSegmentMouseLeave = () => {
+    setTooltip(prev => ({ ...prev, visible: false }));
+  };
+
+  // Big Pie Chart Component
+  const BigPieChart = () => {
+    const size = 320;
+    const radius = 120;
+    const strokeWidth = 40;
+    const center = size / 2;
+    const totalValue = businessData.reduce((sum, item) => sum + item.value, 0);
+
+    // Calculate SVG path for each segment
+    const getPathData = (startPercent, endPercent) => {
+      const startAngle = (startPercent / 100) * 360;
+      const endAngle = (endPercent / 100) * 360;
+      
+      const start = polarToCartesian(center, center, radius, startAngle);
+      const end = polarToCartesian(center, center, radius, endAngle);
+      
+      const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+      
+      return [
+        "M", start.x, start.y,
+        "A", radius, radius, 0, largeArcFlag, 1, end.x, end.y
+      ].join(" ");
+    };
+
+    const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
+      const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+      return {
+        x: centerX + (radius * Math.cos(angleInRadians)),
+        y: centerY + (radius * Math.sin(angleInRadians))
+      };
+    };
+
+    return (
+      <div className="chart-container">
+        <div className="chart-header">
+          <h3>Business Revenue Distribution</h3>
+          <span className="chart-subtitle">Total revenue breakdown by product categories</span>
+        </div>
+        <div className="chart-content">
+          <div className="big-pie-chart-container">
+            <div className="pie-chart-visualization" ref={chartRef}>
+              <svg width={size} height={size} className="big-pie-chart">
+                {businessData.map((item, index) => (
+                  <path
+                    key={index}
+                    d={getPathData(item.startPercent, item.endPercent)}
+                    fill="none"
+                    stroke={item.color}
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                    className="pie-segment"
+                    onMouseMove={(e) => handleSegmentMouseMove(e, item)}
+                    onMouseLeave={handleSegmentMouseLeave}
+                  />
+                ))}
+                <circle
+                  cx={center}
+                  cy={center}
+                  r={radius - strokeWidth / 2}
+                  fill="var(--card-bg)"
+                />
+                <text
+                  x={center}
+                  y={center - 15}
+                  textAnchor="middle"
+                  className="pie-center-value"
+                >
+                  {`${(totalValue / 1000).toFixed(0)}K`}
+                </text>
+                <text
+                  x={center}
+                  y={center + 10}
+                  textAnchor="middle"
+                  className="pie-center-label"
+                >
+                  Total Revenue
+                </text>
+                <text
+                  x={center}
+                  y={center + 30}
+                  textAnchor="middle"
+                  className="pie-center-subtitle"
+                >
+                  in Birr
+                </text>
+              </svg>
+
+              {/* Tooltip */}
+              {tooltip.visible && (
+                <div 
+                  className={`pie-tooltip ${tooltip.visible ? 'visible' : ''}`}
+                  style={{
+                    left: tooltip.x + 20,
+                    top: tooltip.y - 80
+                  }}
+                >
+                  <div className="tooltip-header">
+                    <div 
+                      className="tooltip-color" 
+                      style={{ backgroundColor: tooltip.color }}
+                    ></div>
+                    <span className="tooltip-category">{tooltip.category}</span>
+                    <span className="tooltip-percentage">{tooltip.percentage}%</span>
+                  </div>
+                  <div className="tooltip-details">
+                    <div className="tooltip-description">{tooltip.description}</div>
+                    <div className="tooltip-value">{tooltip.value}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="pie-chart-legend">
+              <h4>Category Legend</h4>
+              <div className="legend-items">
+                {businessData.map((item, index) => (
+                  <div key={index} className="legend-item" data-category={item.category}>
+                    <div className="legend-color-container">
+                      <div 
+                        className="legend-color" 
+                        style={{ backgroundColor: item.color }}
+                      ></div>
+                      <i className={item.icon}></i>
+                    </div>
+                    <div className="legend-content">
+                      <div className="legend-main">
+                        <span className="legend-category">{item.category}</span>
+                        <span className="legend-percentage">{item.percentage}%</span>
+                      </div>
+                      <div className="legend-details">
+                        <span className="legend-description">{item.description}</span>
+                        <span className="legend-value">{item.formattedValue}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="chart-summary">
+                <div className="summary-item">
+                  <span>Total Categories</span>
+                  <span className="summary-value">{businessData.length}</span>
+                </div>
+                <div className="summary-item">
+                  <span>Highest Revenue</span>
+                  <span className="summary-value">{businessData[0]?.category}</span>
+                </div>
+                <div className="summary-item">
+                  <span>Total Value</span>
+                  <span className="summary-value">{totalValue.toLocaleString()} Birr</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="reports-dashboard">
       <div className="reports-header">
         <h2>
-          <i className="fas fa-chart-line"></i>
-          Analytics & Reports
+          <i className="fas fa-chart-pie"></i>
+          Business Overview Dashboard
         </h2>
         <div className="report-controls">
           <select 
@@ -353,19 +320,6 @@ const Reports = ({ products, salesHistory }) => {
             <option value="30days">Last 30 Days</option>
             <option value="90days">Last 90 Days</option>
             <option value="1year">Last Year</option>
-          </select>
-          
-          <select 
-            value={chartType}
-            onChange={(e) => setChartType(e.target.value)}
-            className="chart-type-select"
-          >
-            <option value="revenue">Revenue Analysis</option>
-            <option value="sales">Sales Volume</option>
-            <option value="items">Items Sold</option>
-            <option value="categories">Category Performance</option>
-            <option value="inventory">Inventory Value</option>
-            <option value="inventory-pie">Inventory Distribution</option>
           </select>
         </div>
       </div>
@@ -419,65 +373,74 @@ const Reports = ({ products, salesHistory }) => {
         </div>
       </div>
 
-      {/* Main Chart */}
+      {/* Big Pie Chart */}
       <div className="main-chart-section">
-        {renderChart()}
+        <BigPieChart />
       </div>
 
-      {/* Additional Charts Grid */}
+      {/* Additional Information Grid */}
       <div className="charts-grid">
         <div className="mini-chart">
-          <h4><i className="fas fa-trophy"></i> Top Selling Categories</h4>
+          <h4><i className="fas fa-trophy"></i> Top Performing Categories</h4>
           <div className="mini-chart-content">
-            {categoryData.slice(0, 5).map((category, index) => (
+            {businessData.slice(0, 5).map((category, index) => (
               <div key={index} className="mini-category-item">
                 <span className="category-rank">{index + 1}</span>
-                <span className="category-name">{category.category}</span>
-                <span className="category-amount">{category.revenue.toLocaleString()} Birr</span>
+                <div className="category-info">
+                  <span className="category-name">{category.category}</span>
+                  <span className="category-percentage">{category.percentage}%</span>
+                </div>
+                <span className="category-amount">{category.formattedValue}</span>
               </div>
             ))}
           </div>
         </div>
 
         <div className="mini-chart">
-          <h4><i className="fas fa-box-open"></i> Stock Status</h4>
+          <h4><i className="fas fa-info-circle"></i> Color Guide</h4>
           <div className="mini-chart-content">
-            <div className="stock-status-item">
-              <div className="status-indicator healthy"></div>
-              <span>In Stock</span>
-              <span>{products.length - stats.lowStockItems - stats.outOfStockItems}</span>
+            <div className="color-guide-item">
+              <div className="color-swatch" style={{backgroundColor: "#3498db"}}></div>
+              <span>Mobile Phones - Primary revenue source</span>
             </div>
-            <div className="stock-status-item">
-              <div className="status-indicator warning"></div>
-              <span>Low Stock</span>
-              <span>{stats.lowStockItems}</span>
+            <div className="color-guide-item">
+              <div className="color-swatch" style={{backgroundColor: "#9b59b6"}}></div>
+              <span>Laptops & Computers - High-value items</span>
             </div>
-            <div className="stock-status-item">
-              <div className="status-indicator critical"></div>
-              <span>Out of Stock</span>
-              <span>{stats.outOfStockItems}</span>
+            <div className="color-guide-item">
+              <div className="color-swatch" style={{backgroundColor: "#e74c3c"}}></div>
+              <span>Audio Devices - Popular accessories</span>
+            </div>
+            <div className="color-guide-item">
+              <div className="color-swatch" style={{backgroundColor: "#f39c12"}}></div>
+              <span>Smart Watches - Growing segment</span>
+            </div>
+            <div className="color-guide-item">
+              <div className="color-swatch" style={{backgroundColor: "#2ecc71"}}></div>
+              <span>Tablets - Steady performance</span>
             </div>
           </div>
         </div>
 
         <div className="mini-chart">
-          <h4><i className="fas fa-history"></i> Recent Sales</h4>
+          <h4><i className="fas fa-chart-line"></i> Performance Insights</h4>
           <div className="mini-chart-content">
-            {salesHistory.slice(-5).reverse().map((sale, index) => (
-              <div key={index} className="recent-sale-item">
-                <span className="sale-product">{sale.productName}</span>
-                <span className="sale-amount">{sale.quantity} × {sale.price} Birr</span>
-                <span className="sale-time">
-                  {new Date(sale.timestamp).toLocaleTimeString()}
-                </span>
-              </div>
-            ))}
-            {salesHistory.length === 0 && (
-              <div className="recent-sale-item">
-                <span className="sale-product">No recent sales</span>
-                <span className="sale-amount">Make some sales to see data here</span>
-              </div>
-            )}
+            <div className="insight-item positive">
+              <i className="fas fa-arrow-up"></i>
+              <span>Mobile category leads with {businessData[0]?.percentage}% revenue share</span>
+            </div>
+            <div className="insight-item positive">
+              <i className="fas fa-arrow-up"></i>
+              <span>Electronics show consistent growth across all segments</span>
+            </div>
+            <div className="insight-item neutral">
+              <i className="fas fa-minus"></i>
+              <span>Accessories maintain stable market position</span>
+            </div>
+            <div className="insight-item positive">
+              <i className="fas fa-arrow-up"></i>
+              <span>Smart devices showing increasing demand</span>
+            </div>
           </div>
         </div>
       </div>
