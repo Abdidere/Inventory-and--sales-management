@@ -2,15 +2,29 @@ import React from 'react';
 import '../styles/Products.css';
 
 const ProductCard = ({ product, onClick, isAdmin = false, onSell }) => {
+  
+  // Add debugging
+  console.log('ProductCard rendering:', product);
+
   const handleImageError = (e) => {
     e.target.src = `https://via.placeholder.com/300x300/2c3e50/ffffff?text=${encodeURIComponent(product.name)}`;
   };
 
   const handleClick = () => {
-    if (onClick) {
+    if (onClick && product) {
       onClick(product);
     }
   };
+
+  if (!product) {
+    return (
+      <div className="product-card">
+        <div className="product-content">
+          <h3>Product not available</h3>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="product-card" onClick={handleClick}>
@@ -38,22 +52,6 @@ const ProductCard = ({ product, onClick, isAdmin = false, onSell }) => {
             <i className="fas fa-eye"></i>
           </button>
         </div>
-        
-        {isAdmin && (
-          <div className="admin-controls">
-            <p className="product-stock">In Stock: {product.amount}</p>
-            <button 
-              className="btn btn-success" 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onSell) onSell(product);
-              }}
-              disabled={!product.amount || product.amount === 0}
-            >
-              Sell Item
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
