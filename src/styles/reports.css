@@ -1,3 +1,191 @@
+/* Reports Dashboard */
+.reports-dashboard {
+  padding: 0;
+  min-height: 100vh;
+}
+
+.reports-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem 2rem;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.reports-header h2 {
+  margin: 0;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+}
+
+.report-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.time-range-select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  min-width: 150px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.time-range-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+/* Stats Overview */
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.3s ease;
+  min-height: 120px;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.stat-icon.revenue {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+}
+
+.stat-icon.sales {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.stat-icon.inventory {
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+}
+
+.stat-icon.products {
+  background: linear-gradient(135deg, #e67e22, #d35400);
+}
+
+.stat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-value {
+  margin: 0 0 0.25rem 0;
+  font-size: clamp(1.5rem, 3vw, 1.8rem);
+  font-weight: 800;
+  color: var(--text-color);
+  line-height: 1;
+}
+
+.stat-trend {
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: block;
+}
+
+.stat-trend.positive {
+  color: #27ae60;
+}
+
+.stat-trend.negative {
+  color: #e74c3c;
+}
+
+/* Main Chart Section */
+.main-chart-section {
+  margin-bottom: 2rem;
+}
+
+/* Chart Containers */
+.chart-container {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+  overflow: hidden;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.chart-header h3 {
+  margin: 0 0 0.25rem 0;
+  color: var(--text-color);
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  font-weight: 600;
+}
+
+.chart-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.chart-content {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+}
+
 /* Big Pie Chart Styles */
 .big-pie-chart-container {
   display: flex;
@@ -338,15 +526,114 @@
   border: 1px solid var(--border-color);
 }
 
-/* Additional Styles for New Components */
+/* Mini Charts Grid */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.mini-chart {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  padding: 1.25rem;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mini-chart h4 {
+  margin: 0 0 1rem 0;
+  color: var(--text-color);
+  font-size: clamp(0.9rem, 1.8vw, 1rem);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mini-chart-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 220px;
+}
+
+/* Mini Category Items */
+.mini-category-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.mini-category-item:hover {
+  background: var(--bg-color);
+  border-color: var(--border-color);
+}
+
+.category-rank {
+  width: 24px;
+  height: 24px;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.category-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  gap: 1rem;
+}
+
+.category-name {
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+.category-percentage {
+  font-weight: 700;
+  color: var(--primary-color);
+  background: var(--bg-color);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  font-size: 0.8rem;
+}
+
+.category-amount {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+/* Additional Styles */
 .color-guide-item {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
-  border-radius: 12px;
+  padding: 0.75rem;
+  border-radius: 8px;
   background: var(--bg-color);
-  border: 2px solid transparent;
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
 }
 
@@ -356,11 +643,11 @@
 }
 
 .color-swatch {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  border: 3px solid white;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
   transition: transform 0.3s ease;
 }
@@ -372,10 +659,10 @@
 .insight-item {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
-  padding: 1.25rem;
-  border-radius: 12px;
-  border-left: 5px solid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border-left: 4px solid;
   transition: all 0.3s ease;
 }
 
@@ -395,8 +682,8 @@
 }
 
 .insight-item i {
-  font-size: 1.1rem;
-  margin-top: 0.2rem;
+  font-size: 0.9rem;
+  margin-top: 0.1rem;
   flex-shrink: 0;
 }
 
@@ -409,36 +696,13 @@
 }
 
 .insight-item span {
-  line-height: 1.5;
+  line-height: 1.4;
   color: var(--text-color);
   font-weight: 500;
+  font-size: 0.85rem;
 }
 
-.category-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1;
-}
-
-.category-percentage {
-  font-weight: 700;
-  color: var(--primary-color);
-  background: var(--bg-color);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  border: 2px solid var(--border-color);
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-
-.mini-category-item:hover .category-percentage {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-/* Responsive Big Pie Chart */
+/* Responsive Design */
 @media (max-width: 1200px) {
   .big-pie-chart-container {
     flex-direction: column;
@@ -453,9 +717,28 @@
 }
 
 @media (max-width: 768px) {
+  .reports-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+  }
+  
+  .report-controls {
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .time-range-select {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .stats-overview {
+    grid-template-columns: 1fr;
+  }
+  
   .big-pie-chart-container {
     padding: 1rem;
-    gap: 1.5rem;
   }
   
   .big-pie-chart {
@@ -467,36 +750,8 @@
     font-size: 2.2rem;
   }
   
-  .pie-center-label {
-    font-size: 1rem;
-  }
-  
-  .pie-center-subtitle {
-    font-size: 0.85rem;
-  }
-  
-  .legend-item {
-    padding: 1rem;
-    gap: 0.75rem;
-  }
-  
-  .legend-color {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .legend-category {
-    font-size: 1rem;
-  }
-  
-  .legend-percentage {
-    font-size: 1.1rem;
-    padding: 0.4rem 0.8rem;
-  }
-  
-  .pie-tooltip {
-    min-width: 180px;
-    padding: 0.75rem 1rem;
+  .charts-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -506,79 +761,36 @@
     height: 250px;
   }
   
-  .pie-center-value {
-    font-size: 2rem;
-  }
-  
   .legend-item {
     flex-direction: column;
-    gap: 1rem;
     text-align: center;
+    gap: 1rem;
   }
   
   .legend-color-container {
     flex-direction: row;
-    gap: 1rem;
-  }
-  
-  .legend-main {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  
-  .chart-summary {
-    padding: 1.5rem;
-  }
-  
-  .pie-tooltip {
-    min-width: 160px;
-    padding: 0.5rem 0.75rem;
-  }
-  
-  .tooltip-header {
-    flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
-  }
-  
-  .tooltip-percentage {
-    margin-left: 0;
   }
 }
 
-/* Scrollbar for legend */
-.legend-items::-webkit-scrollbar {
-  width: 8px;
+/* Scrollbars */
+.legend-items::-webkit-scrollbar,
+.mini-chart-content::-webkit-scrollbar {
+  width: 6px;
 }
 
-.legend-items::-webkit-scrollbar-track {
+.legend-items::-webkit-scrollbar-track,
+.mini-chart-content::-webkit-scrollbar-track {
   background: var(--bg-color);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
-.legend-items::-webkit-scrollbar-thumb {
+.legend-items::-webkit-scrollbar-thumb,
+.mini-chart-content::-webkit-scrollbar-thumb {
   background: var(--primary-color);
-  border-radius: 4px;
-  border: 2px solid var(--bg-color);
+  border-radius: 3px;
 }
 
-.legend-items::-webkit-scrollbar-thumb:hover {
+.legend-items::-webkit-scrollbar-thumb:hover,
+.mini-chart-content::-webkit-scrollbar-thumb:hover {
   background: #2980b9;
-}
-
-/* Animation for tooltip */
-@keyframes tooltipFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.pie-tooltip.visible {
-  animation: tooltipFadeIn 0.3s ease-out;
 }
